@@ -24,6 +24,26 @@ class MainActivity : ComponentActivity() {
         recyclerView = binding.recyclerView
         recyclerView.layoutManager = LinearLayoutManager(this)
         getPosts()
+        getPostsById(1)
+    }
+
+    private fun getPostsById(postId: Int) {
+        RetrofitInstance.api.getPostById(postId).enqueue(object : Callback<PostResponseItem> {
+            override fun onResponse(call: Call<PostResponseItem>, response: Response<PostResponseItem>) {
+                if (response.isSuccessful && response.body() != null) {
+                    val post = response.body()!!
+                    Log.d("MainActivity", "Post retrieved: $post")
+                    postAdapter = PostAdapter(listOf(post))
+                    recyclerView.adapter = postAdapter
+                } else {
+                    Log.e("MainActivity", "Failed to retrieve post by ID: ${response.message()}")
+                }
+            }
+
+            override fun onFailure(call: Call<PostResponseItem>, t: Throwable) {
+                Log.e("MainActivity", "API call failed: ${t.message}")
+            }
+        })
     }
 
     private fun getPosts() {
